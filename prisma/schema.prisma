@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model user {
+  id                                    Int                                    @id @default(autoincrement())
+  email                                 String                                 @unique
+  pwdHash                               String?
+  pwdSalt                               String?
+  avatarImageUrl                        String?
+  createdAt                             Int?
+  updatedAt                             Int?
+  fullname                              String?
+  username                              String                                 @unique(map: "username")
+  artist                                artist[]
+  playlist                              playlist[]
+  profile                               profile?
+  rbac_user_role_links                  rbac_user_role_link[]
+  recent_listening_based_recommendation recent_listening_based_recommendation?
+  user_favourite_tracks                 user_favourite_track[]                 @relation("user_favourite_track_user_fk")
+  user_listen_album                     user_listen_album[]
+  user_listen_artist                    user_listen_artist[]
+  user_listen_track                     user_listen_track[]
+}
+
+model profile {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique
+  firstName String?
+  lastName  String?
+  address   String?
+  user      user    @relation(fields: [userId], references: [id])
+}
+
+model track {
+  id                              Int                               @id @default(autoincrement())
+  spotifyTrackId                  String?                           @unique @db.VarChar(22)
+  title                           String                            @db.VarChar(512)
+  artistNames                     String                            @db.VarChar(640)
+  durationMs                      Int
+  trackNumber                     Int?
+  discNumber                      Int?
+  audioId                         Int?
+  mainArtistId                    Int
+  albumId                         Int?
+  listenCount                     Int                               @default(0)
+  previewAudioUrl                 String?
+  temp_popularity                 Int?                              @default(0)
+  temp_mark                       Int?                              @default(0)
+  lyrics                          lyrics?
+  playlist_track_links            playlist_track_link[]
+  secondary_artist_track_links    secondary_artist_track_link[]
+  album                           album?                            @relation(fields: [albumId], references: [id])
+  audio                           audio?                            @relation(fields: [audioId], references: [id])
+  mainArtist                      artist                            @relation(fields: [mainArtistId], references: [id])
+  track_spotifysecondtrackid_link track_spotifysecondtrackid_link[]
+  user_favourite_tracks           user_favourite_track[]            @relation("user_favourite_track_track_fk")
+  user_listen_tracks              user_listen_track[]
+
+  @@index([spotifyTrackId], map: "track_spotifyTrackId_index")
+  @@index([albumId], map: "track_albumId_fkey")
+  @@index([audioId], map: "track_audioId_fkey")
+  @@index([mainArtistId], map: "track_mainArtistId_fkey")
+}
+
+model album {
+  id                 Int                 @id @default(autoincrement())
+  title              String              @db.VarChar(512)
+  spotifyAlbumId     String?             @unique @db.VarChar(22)
+  artistId           Int?
+  coverImageUrl      String?
+  albumGroup         AlbumGroup?
+  albumType          AlbumType?
+  releasedAt         Int?
+  createdAt          Int?
+  updatedAt          Int?
+  temp_popularity    Int?                @default(0)
+  artist             artist?             @relation(fields: [artistId], references: [id])
+  tracks             track[]
+  user_listen_albums user_listen_album[]
+
+  @@index([spotifyAlbumId], map: "album_spotifyAlbumId_index")
+  @@index([artistId], map: "album_artistId_fkey")
+}
+
+model artist {
+  id                          Int                           @id @default(autoincrement())
+  spotifyArtistId             String?                       @unique @db.VarChar(22)
+  name                        String?
+  introduction                String?
+  userId                      Int?
+  avatarImageUrl              String?
+  coverImageUrl               String?                       @unique
+  createdAt                   Int?
+  updatedAt                   Int?
+  temp_popularity             Int?                          @default(0)
+  albums                      album[]
+  user                        user?                         @relation(fields: [userId], references: [id])
+  secondary_artist_track_link secondary_artist_track_link[]
+  tracks                      track[]
+  user_listen_artist          user_listen_artist[]
+
+  @@index([spotifyArtistId], map: "artist_spotifyArtistId_index")
+  @@index([userId], map: "artist_userId_fkey")
+}
+
+model playlist {
+  id                   Int                   @id @default(autoincrement())
+  name                 String?
+  description          String?
+  ownerUserId          Int
+  coverImageUrl        String
+  createdAt            Int?
+  updatedAt            Int?
+  ownerUser            user                  @relation(fields: [ownerUserId], references: [id])
+  playlist_track_links playlist_track_link[]
+
+  @@index([ownerUserId], map: "playlist_ownerUserId_fkey")
+}
+
+model secondary_artist_track_link {
+  id        Int    @id @default(autoincrement())
+  artistId  Int
+  trackId   Int
+  createdAt Int
+  artist    artist @relation(fields: [artistId], references: [id])
+  track     track  @relation(fields: [trackId], references: [id])
+
+  @@index([artistId], map: "secondary_artist_track_link_artistId_fkey")
+  @@index([trackId], map: "secondary_artist_track_link_trackId_fkey")
+}
+
+model playlist_track_link {
+  id         Int      @id @default(autoincrement())
+  playlistId Int
+  trackId    Int
+  no         Int
+  createdAt  Int
+  playlist   playlist @relation(fields: [playlistId], references: [id])
+  track      track    @relation(fields: [trackId], references: [id])
+
+  @@index([playlistId], map: "playlist_track_link_playlistId_fkey")
+  @@index([trackId], map: "playlist_track_link_trackId_fkey")
+}
+
+model audio {
+  id          Int     @id @default(autoincrement())
+  label       String? @db.VarChar(512)
+  path        String?
+  s3ObjectKey String?
+  /// In bytes
+  size        Int?
+  /// In seconds
+  length      Int?
+  fullUrl     String?
+  createdAt   Int?
+  updatedAt   Int?
+  track       track[]
+}
+
+model user_listen_track {
+  id          Int   @id @default(autoincrement())
+  userId      Int
+  trackId     Int
+  listenCount Int   @default(0)
+  createdAt   Int?
+  updatedAt   Int?
+  track       track @relation(fields: [trackId], references: [id])
+  user        user  @relation(fields: [userId], references: [id])
+
+  @@unique([userId, trackId], name: "user_listen_track_userId_trackId_unique")
+  @@index([trackId], map: "user_listen_track_trackId_fkey")
+}
+
+model user_listen_artist {
+  id          Int    @id @default(autoincrement())
+  userId      Int
+  artistId    Int
+  listenCount Int    @default(0)
+  createdAt   Int?
+  updatedAt   Int?
+  artist      artist @relation(fields: [artistId], references: [id])
+  user        user   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, artistId])
+  @@index([artistId], map: "user_listen_artist_artistId_fkey")
+}
+
+model user_favourite_track {
+  id        Int   @id @default(autoincrement())
+  userId    Int
+  trackId   Int
+  createdAt Int?
+  updatedAt Int?
+  track     track @relation("user_favourite_track_track_fk", fields: [trackId], references: [id])
+  user      user  @relation("user_favourite_track_user_fk", fields: [userId], references: [id])
+
+  @@index([trackId], map: "user_favourite_track_trackId_fkey")
+  @@index([userId], map: "user_favourite_track_userId_fkey")
+}
+
+model user_listen_album {
+  id        Int   @id @default(autoincrement())
+  userId    Int
+  albumId   Int
+  createdAt Int?
+  updatedAt Int?
+  album     album @relation(fields: [albumId], references: [id])
+  user      user  @relation(fields: [userId], references: [id])
+
+  @@unique([userId, albumId])
+  @@index([albumId], map: "user_listen_album_albumId_fkey")
+}
+
+model rbac_permission {
+  uniqueName                String                      @id
+  displayName               String?
+  description               String?
+  rbac_role_permission_link rbac_role_permission_link[]
+}
+
+model rbac_role {
+  uniqueName                String                      @id
+  displayName               String?
+  description               String?
+  rbac_role_permission_link rbac_role_permission_link[]
+  rbac_user_role_link       rbac_user_role_link[]
+}
+
+model rbac_role_permission_link {
+  id           Int             @id @default(autoincrement())
+  roleId       String
+  permissionId String
+  permission   rbac_permission @relation(fields: [permissionId], references: [uniqueName])
+  role         rbac_role       @relation(fields: [roleId], references: [uniqueName])
+
+  @@index([permissionId], map: "rbac_role_permission_link_permissionId_fkey")
+  @@index([roleId], map: "rbac_role_permission_link_roleId_fkey")
+}
+
+model rbac_user_role_link {
+  id     Int       @id @default(autoincrement())
+  userId Int
+  roleId String
+  role   rbac_role @relation(fields: [roleId], references: [uniqueName])
+  user   user      @relation(fields: [userId], references: [id])
+
+  @@index([roleId], map: "rbac_user_role_link_roleId_fkey")
+  @@index([userId], map: "rbac_user_role_link_userId_fkey")
+}
+
+model lyrics {
+  id        Int     @id @default(autoincrement())
+  trackId   Int     @unique
+  content   String? @db.Text
+  createdAt Int?
+  updatedAt Int?
+  track     track   @relation(fields: [trackId], references: [id])
+}
+
+model recent_listening_based_recommendation {
+  id        Int    @id @default(autoincrement())
+  userId    Int    @unique
+  trackIds  String @db.Text
+  createdAt Int?
+  updatedAt Int?
+  user      user   @relation(fields: [userId], references: [id])
+}
+
+model track_spotifysecondtrackid_link {
+  id                   Int    @id @default(autoincrement())
+  trackId              Int
+  spotifySecondTrackId String @db.VarChar(22)
+  track                track  @relation(fields: [trackId], references: [id], map: "track_spotifySecondTrackId_link_trackId_fkey")
+
+  @@index([trackId], map: "track_spotifySecondTrackId_link_trackId_fkey")
+}
+
+enum AlbumGroup {
+  single
+  album
+  appears_on
+  compilation
+}
+
+enum AlbumType {
+  album
+  single
+  compilation
+}
