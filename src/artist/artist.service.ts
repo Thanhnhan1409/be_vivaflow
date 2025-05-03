@@ -47,6 +47,8 @@ export class ArtistService {
   }
 
   async findOne(id: number) {
+    console.log('findOne', id);
+    
     const artist = await this.prisma.artist.findFirstOrThrow({
       where: { id },
     });
@@ -55,6 +57,7 @@ export class ArtistService {
   }
 
   async findOne_WithAlbums(id: number) {
+    console.log('findOne', id);
     const artist = await this.prisma.artist.findFirstOrThrow({
       where: { id },
       include: { albums: true },
@@ -64,6 +67,7 @@ export class ArtistService {
   }
 
   async findOne_WithTracks(id: number) {
+    console.log('findOne', id);
     const artist = await this.prisma.artist.findFirstOrThrow({
       where: { id },
       include: { tracks: true },
@@ -73,6 +77,7 @@ export class ArtistService {
   }
 
   async findOne_WithAllForeign(id: number) {
+    console.log('findOne', id);
     const artist = await this.prisma.artist.findFirstOrThrow({
       where: { id },
       include: {

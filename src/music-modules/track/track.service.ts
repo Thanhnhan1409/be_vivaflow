@@ -8,7 +8,7 @@ import { PlainToInstance, PlainToInstanceList } from 'src/helpers';
 import { FindManyTrackQueryDto } from './dto/findManyTrack.dto';
 import { isNil } from 'lodash';
 import { Track, TrackWithForeign } from './entities/track.entity';
-import moment from 'moment';
+import * as moment from 'moment';
 
 @Injectable()
 export class TrackService {
@@ -124,7 +124,7 @@ export class TrackService {
   async toggleLikeTrack(dto: ToggleLikeTrackDto, authData: AuthData) {
     const { toggleOn, trackId } = dto;
     await this.prisma.track.findFirstOrThrow({
-      where: { id: +dto.trackId },
+      where: { id: Number(dto.trackId) },
     });
 
     const like = await this.prisma.user_favourite_track.findFirst({
