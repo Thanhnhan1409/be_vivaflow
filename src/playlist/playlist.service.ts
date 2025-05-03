@@ -76,7 +76,7 @@ export class PlaylistService {
   async addTrackToPlaylist(dto: AddTrackToPlaylistDto, authData: AuthData) {
     const { playlistId, trackId } = dto;
     await this.prisma.track.findFirstOrThrow({
-      where: { id: trackId },
+      where: { id: Number(trackId) },
     });
 
     const playlist = await this.prisma.playlist.findFirstOrThrow({
@@ -104,6 +104,7 @@ export class PlaylistService {
     trackId: number,
     authData: AuthData,
   ) {
+
     await this.prisma.track.findFirstOrThrow({
       where: { id: trackId },
     });

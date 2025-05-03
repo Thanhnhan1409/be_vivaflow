@@ -21,6 +21,7 @@ import {
   GetAuthData,
 } from 'src/auth/decorator/get-auth-data.decorator';
 import { ToggleLikeTrackDto } from './dto/toggleLikeTrack.dto';
+import { UserGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('track')
 export class TrackController {
@@ -65,11 +66,13 @@ export class TrackController {
 
   @Post(':id/listen')
   @ApiBearerAuth()
-  @UseGuards(UseGuards)
+  @UseGuards(UserGuard)
   async listenToTrack(
     @Param('id') id: string,
     @GetAuthData() authData: AuthData,
   ) {
+    console.log('id', id);
+    
     console.log('auth', authData);
     
     return await this.trackService.listenTrack(+id, authData);
