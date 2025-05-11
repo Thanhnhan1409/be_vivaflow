@@ -17,33 +17,83 @@ export class ArtistService {
   // return 'This action adds a new artist';
   // }
 
-  async findAll() {
-    const artists = await this.prisma.artist.findMany();
-
-    return PlainToInstanceList(Artist, artists);
+  async findAll(page = 1, pageSize = 10) {
+    const skip = (page - 1) * pageSize;
+    const take = pageSize;
+  
+    const [artists, total] = await this.prisma.$transaction([
+      this.prisma.artist.findMany({
+        skip,
+        take,
+      }),
+      this.prisma.artist.count(),
+    ]);
+  
+    return {
+      data: PlainToInstanceList(Artist, artists),
+      meta: {
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    };
   }
+  
 
   async findMany(filter: FindManyArtistQueryDto) {
-    const artists = await this.prisma.artist.findMany({
-      where: {
-        id: filter.ids ? { in: filter.ids } : undefined,
-        spotifyArtistId: filter.spotifyIds
-          ? { in: filter.spotifyIds }
-          : undefined,
-      },
-    });
+    const page = Number(filter.page) || 1;
+    const limit = Number(filter.pageSize) || 10;
+    const skip = (page - 1) * limit;
+    const [artists, total] =  await this.prisma.$transaction([
+      this.prisma.artist.findMany({
+        skip,
+        take: limit,
+        where: {
+          id: filter.ids ? { in: filter.ids.map(id => Number(id)) } : undefined,
+          spotifyArtistId: filter.spotifyIds
+            ? { in: filter.spotifyIds }
+            : undefined,
+        },
+      }),
+      this.prisma.artist.count(),
+    ]);
 
-    return PlainToInstanceList(Artist, artists);
+    return {
+      data: PlainToInstanceList(Artist, artists),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   }
 
   async searchArtistName(filter: SearchArtistNameQueryDto) {
-    const artists = await this.prisma.artist.findMany({
-      where: {
-        name: { contains: filter.searchText.trim() },
-      },
-    });
+    const page = Number(filter.page) || 1;
+    const limit = Number(filter.pageSize) || 10;
+    const skip = (page - 1) * limit;
+    const [artists, total] = await this.prisma.$transaction([
+      this.prisma.artist.findMany({
+        skip,
+        take: limit,
+        where: {
+          name: { contains: filter.searchText.trim() },
+        },
+      }),
+      this.prisma.artist.count(),
+    ]);
 
-    return PlainToInstanceList(Artist, artists);
+    return {
+      data: PlainToInstanceList(Artist, artists),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    }
   }
 
   async findOne(id: number) {
@@ -72,7 +122,6 @@ export class ArtistService {
       where: { id },
       include: { tracks: true },
     });
-
     return PlainToInstance(ArtistWithForeign, artist);
   }
 

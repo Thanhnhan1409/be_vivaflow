@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   ApiPropNumber,
   ApiPropString,
@@ -21,7 +22,11 @@ export class Artist {
 }
 
 export class ArtistWithForeign extends Artist {
-  @ApiPropTypeOptional([Album]) albums: Album[];
-  @ApiPropTypeOptional([Track]) tracks: Track[];
+  @ApiPropTypeOptional([Album])
+  @Type(() => Album)
+  albums: Album[];
+  @ApiPropTypeOptional([Track])
+  @Type(() => Track)
+  tracks: Track[];
   @ApiPropTypeOptional(User) User: User;
 }

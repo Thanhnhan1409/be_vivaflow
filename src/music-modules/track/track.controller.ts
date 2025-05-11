@@ -33,8 +33,14 @@ export class TrackController {
   // }
 
   @Get()
-  async findAll() {
-    return await this.trackService.findAll();
+  async findAll(
+    @Query('pageNumber') page = '1',
+    @Query('pageSize') limit = '10',
+  ) {
+    const pageNumber = parseInt(page, 10) || 1;
+    const limitNumber = parseInt(limit, 10) || 10;
+
+    return await this.trackService.findAll(pageNumber, limitNumber);
   }
 
   @Get(':id')
@@ -54,7 +60,7 @@ export class TrackController {
 
   @Get('get-recent')
   @ApiBearerAuth()
-  @UseGuards(UseGuards)
+  @UseGuards(UserGuard)
   async GetRecentTracks(@GetAuthData() authData: AuthData) {
     return await this.trackService.getRecentListenTracks(authData);
   }
@@ -80,7 +86,7 @@ export class TrackController {
 
   @Post(':id/toggle-like')
   @ApiBearerAuth()
-  @UseGuards(UseGuards)
+  @UseGuards(UserGuard)
   async toggleLikeTrack(
     @Body() body: ToggleLikeTrackDto,
     @GetAuthData() authData: AuthData,
