@@ -13,4 +13,6 @@ export class FindManyTrackQueryDto {
   @ValidateApiPropOptionalString() spotifyAlbumId: string;
   @ValidateApiPropOptionalString() spotifyArtistId: string;
   @ValidateApiPropOptionalNumber() playlistId: number;
+  @ValidateApiPropOptionalNumber() pageNumber: number;
+  @ValidateApiPropOptionalNumber() pageSize: number;
 }

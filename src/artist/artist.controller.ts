@@ -16,6 +16,7 @@ import {
   AuthData,
   GetAuthData,
 } from 'src/auth/decorator/get-auth-data.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 // import { CreateArtistDto } from './dto/create-artist.dto';
 // import { UpdateArtistDto } from './dto/update-artist.dto';
 
@@ -49,25 +50,36 @@ export class ArtistController {
   }
 
   @Get('search-by-name/:searchText')
-  searchArtistName(@Param('searchText') searchText: string) {
-    return this.artistService.searchArtistName({ searchText });
+  searchArtistName(
+    @Param('searchText') searchText: string,
+    @Query('page') page?: number,
+    @Query('pageSize') pageSize?: number,
+  ) {
+    return this.artistService.searchArtistName({
+      searchText,
+      page,
+      pageSize
+    });
   }
 
   @Get('find-many')
   @UseGuards(UserGuard)
+  @ApiBearerAuth()
   findMany(@Query() query: FindManyArtistQueryDto) {
     return this.artistService.findMany(query);
   }
 
-  @Get('with-tracks')
+  @Get('with-tracks/:id')
   @UseGuards(UserGuard)
+  @ApiBearerAuth()
   findOneWithSong(@Param('id') id: string) {
     if (isNaN(+id)) throw new Error('Invalid artist id');
     return this.artistService.findOne_WithTracks(+id);
   }
 
-  @Get('with-albums')
+  @Get('with-albums/:id')
   @UseGuards(UserGuard)
+  @ApiBearerAuth()
   findOneWithAlbums(@Param('id') id: string) {
     if (isNaN(+id)) throw new Error('Invalid artist id');
     return this.artistService.findOne_WithAlbums(+id);
@@ -75,6 +87,7 @@ export class ArtistController {
 
   @Get('recent-listen')
   @UseGuards(UserGuard)
+  @ApiBearerAuth()
   getRecentListenArtist(@GetAuthData() authData: AuthData) {
     return this.artistService.getRecentListenArtist(authData);
   }
