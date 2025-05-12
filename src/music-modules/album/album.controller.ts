@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, Delete, Query } from '@nestjs/common';
 import { AlbumService } from './album.service';
 
 @Controller('album')
@@ -11,13 +11,18 @@ export class AlbumController {
   // }
 
   @Get()
-  findAll() {
-    return this.albumService.findAll();
+  async findAll(
+    @Query('pageNumber') page = '1',
+    @Query('pageSize') limit = '10',
+  ) {
+    const pageNumber = parseInt(page, 10) || 1;
+    const limitNumber = parseInt(limit, 10) || 10;
+    return this.albumService.findAll(pageNumber, limitNumber);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.albumService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.albumService.findOneWithTrack(+id);
   }
 
   // @Patch(':id')
@@ -28,5 +33,10 @@ export class AlbumController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.albumService.remove(+id);
+  }
+
+  @Get('with-tracks/:id')
+  async getAlbumWithTracks(@Param('id') id: number) {
+    return this.albumService.findOneWithTrack(id);
   }
 }

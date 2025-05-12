@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { Artist } from 'src/artist/entities/artist.entity';
 import {
   ApiPropNumber,
@@ -29,7 +30,9 @@ export class Pivot_PlaylistTrackLink {
   @ApiPropNumber() playlistId: number;
   @ApiPropNumber() trackId: number;
 
-  @ApiPropTypeOptional(Track) track?: Track;
+  @ApiPropTypeOptional(Track)
+  @Type (() => Track)
+  track?: Track;
   @ApiPropTypeOptional(Playlist) playlist?: Playlist;
 }
 

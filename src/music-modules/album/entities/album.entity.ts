@@ -1,4 +1,5 @@
 import { AlbumGroup, AlbumType } from '@prisma/client';
+import { Type } from 'class-transformer';
 import { Artist } from 'src/artist/entities/artist.entity';
 import {
   ApiPropEnumOptional,
@@ -23,12 +24,26 @@ export class Album {
   @ApiPropNumber() releasedAt: number;
   @ApiPropNumber() createdAt: number;
   @ApiPropNumber() updatedAt: number;
-}
 
+  @ApiPropTypeOptional(() => Artist)
+  @Type(() => Artist)
+  artist?: Artist;
+}
 export class AlbumWithForeign {
-  @ApiPropTypeOptional(Track) tracks?: Track[];
-  @ApiPropTypeOptional(Artist) artist?: Artist;
+  @ApiPropTypeOptional(Track)
+  @Type(() => Track)
+  tracks?: Track[];
+  @ApiPropTypeOptional(Artist)
+  @Type(() => Artist)
+  artist?: Artist;
 
   @ApiPropTypeOptional(Pivot_UserListenAlbum)
+  @Type(() => Pivot_UserListenAlbum)
   user_listen_albums?: Pivot_UserListenAlbum[];
+}
+
+export class AlbumWithTrack extends Album {
+  @ApiPropTypeOptional([Track])
+  @Type(() => Track)
+  tracks?: Track[];
 }

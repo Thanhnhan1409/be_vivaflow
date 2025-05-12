@@ -25,6 +25,7 @@ export class ArtistService {
       this.prisma.artist.findMany({
         skip,
         take,
+        orderBy: { temp_popularity : 'desc' },
       }),
       this.prisma.artist.count(),
     ]);

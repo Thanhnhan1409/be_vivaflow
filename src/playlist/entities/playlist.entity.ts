@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   ApiPropNumber,
   ApiPropStringOptional,
@@ -21,8 +22,11 @@ export class Playlist {
 }
 
 export class PlaylistWithForeign extends Playlist {
-  @ApiPropTypeOptional(User) ownerUser?: User;
+  @ApiPropTypeOptional(User)
+  @Type(() => User)
+  ownerUser?: User;
 
   @ApiPropTypeOptional([Pivot_PlaylistTrackLink])
+  @Type(() => Pivot_PlaylistTrackLink)
   playlist_track_links?: Pivot_PlaylistTrackLink[];
 }
