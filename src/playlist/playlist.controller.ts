@@ -15,6 +15,7 @@ import {
 } from 'src/auth/decorator/get-auth-data.decorator';
 import { AddTrackToPlaylistDto } from './dto/addTrackToPlaylist.dto';
 import { UserGuard } from 'src/auth/guard/auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 // import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 
 @Controller('playlist')
@@ -22,6 +23,7 @@ export class PlaylistController {
   constructor(private readonly playlistService: PlaylistService) {}
 
   @Post()
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   create(
     @GetAuthData()
@@ -41,12 +43,21 @@ export class PlaylistController {
   }
 
   @Get('my-playlists')
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   getMyPlaylists(@GetAuthData() authData: AuthData) {
     return this.playlistService.getMyPlaylists(authData);
   }
 
+  @Get('tracks-with-foreign/:id')
+  @ApiBearerAuth()
+  @UseGuards(UserGuard)
+  getTrackWithForeign(@Param('id') id: string) {
+    return this.playlistService.findOneWithForeign(+id);
+  }
+
   @Post('/add-track')
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   addTrackToPlaylist(
     @Body() body: AddTrackToPlaylistDto,

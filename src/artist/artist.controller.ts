@@ -30,13 +30,18 @@ export class ArtistController {
   // }
 
   @Get()
-  findAll() {
-    return this.artistService.findAll();
+  async findAll(
+    @Query('pageNumber') page = '1',
+    @Query('pageSize') limit = '10',
+  ) {
+    const pageNumber = parseInt(page, 10) || 1;
+    const limitNumber = parseInt(limit, 10) || 10;
+    return await this.artistService.findAll(pageNumber, limitNumber);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.artistService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return await this.artistService.findOne(+id);
   }
 
   // @Patch(':id')
@@ -45,17 +50,17 @@ export class ArtistController {
   // }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.artistService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.artistService.remove(+id);
   }
 
   @Get('search-by-name/:searchText')
-  searchArtistName(
+  async searchArtistName(
     @Param('searchText') searchText: string,
     @Query('page') page?: number,
     @Query('pageSize') pageSize?: number,
   ) {
-    return this.artistService.searchArtistName({
+    return await this.artistService.searchArtistName({
       searchText,
       page,
       pageSize
@@ -65,30 +70,30 @@ export class ArtistController {
   @Get('find-many')
   @UseGuards(UserGuard)
   @ApiBearerAuth()
-  findMany(@Query() query: FindManyArtistQueryDto) {
-    return this.artistService.findMany(query);
+  async findMany(@Query() query: FindManyArtistQueryDto) {
+    return await this.artistService.findMany(query);
   }
 
   @Get('with-tracks/:id')
   @UseGuards(UserGuard)
   @ApiBearerAuth()
-  findOneWithSong(@Param('id') id: string) {
+  async findOneWithSong(@Param('id') id: string) {
     if (isNaN(+id)) throw new Error('Invalid artist id');
-    return this.artistService.findOne_WithTracks(+id);
+    return await this.artistService.findOne_WithTracks(+id);
   }
 
   @Get('with-albums/:id')
   @UseGuards(UserGuard)
   @ApiBearerAuth()
-  findOneWithAlbums(@Param('id') id: string) {
+  async findOneWithAlbums(@Param('id') id: string) {
     if (isNaN(+id)) throw new Error('Invalid artist id');
-    return this.artistService.findOne_WithAlbums(+id);
+    return await this.artistService.findOne_WithAlbums(+id);
   }
 
   @Get('recent-listen')
   @UseGuards(UserGuard)
   @ApiBearerAuth()
-  getRecentListenArtist(@GetAuthData() authData: AuthData) {
-    return this.artistService.getRecentListenArtist(authData);
+  async getRecentListenArtist(@GetAuthData() authData: AuthData) {
+    return await this.artistService.getRecentListenArtist(authData);
   }
 }

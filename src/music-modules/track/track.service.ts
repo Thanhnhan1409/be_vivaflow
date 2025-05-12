@@ -246,4 +246,14 @@ export class TrackService {
       },
     });
   }
+
+  async tracksInAlbum(albumId: number) {
+    const tracks = await this.prisma.track.findMany({
+      where: {
+        albumId: Number(albumId),
+      },
+    });
+
+    return PlainToInstanceList(Track, tracks);
+  }
 }

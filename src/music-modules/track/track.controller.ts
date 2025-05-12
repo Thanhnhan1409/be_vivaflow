@@ -93,4 +93,9 @@ export class TrackController {
   ) {
     return await this.trackService.toggleLikeTrack(body, authData);
   }
+
+  @Get('with-album/:id')
+  async findOneWithAlbum(@Param('id') id: string) {
+    return await this.trackService.tracksInAlbum(+id);
+  }
 }
