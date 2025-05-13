@@ -98,10 +98,8 @@ export class ArtistService {
   }
 
   async findOne(id: number) {
-    console.log('findOne', id);
-    
     const artist = await this.prisma.artist.findFirstOrThrow({
-      where: { id },
+      where: { id: Number(id) },
     });
 
     return PlainToInstance(Artist, artist);

@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { AuthData } from 'src/auth/decorator/get-auth-data.decorator';
+import { PlainToInstance } from 'src/helpers';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -14,7 +16,7 @@ export class UserService {
     return `This action returns all user`;
   }
 
-  getFavoriteTracks(authData: AuthData) {
+  async getFavoriteTracks(authData: AuthData) {
     return this.prisma.user_favourite_track.findMany({
       where: {
         userId: authData.id,
@@ -82,8 +84,12 @@ export class UserService {
     });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: number) {
+    // return `This action returns a #${id} user`;
+    const user = await this.prisma.user.findFirstOrThrow({
+      where: {id: Number(id)}
+    });
+    return PlainToInstance(User, user);
   }
 
   // update(id: number, updateUserDto: UpdateUserDto) {
