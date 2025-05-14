@@ -161,6 +161,52 @@ export class ArtistService {
       recentArtists.map((i) => i.artist),
     );
   }
+  
+  async toggleFollowArtist(authData: AuthData, artistIds: number[]) {
+    const userId = Number(authData.id);
+    const now = Math.floor(Date.now() / 1000);
+    
+    await Promise.all(
+      artistIds.map(async (artistId) => {
+        const record = await this.prisma.user_listen_artist.findUnique({
+          where: {
+            userId_artistId: {
+              userId,
+              artistId,
+            },
+          },
+        });
+
+        if (!record) {
+          return this.prisma.user_listen_artist.create({
+            data: {
+              userId,
+              artistId,
+              listenCount: 1,
+              createdAt: now,
+            },
+          });
+        } else {
+          const newCount = record.listenCount === 1 ? 0 : 1;
+          return this.prisma.user_listen_artist.update({
+            where: {
+              userId_artistId: {
+                userId,
+                artistId,
+              },
+            },
+            data: {
+              listenCount: newCount,
+              updatedAt: now,
+            },
+          });
+        }
+      })
+    );
+
+    return true;
+  } 
+
 
   // TODO
   // update(id: number, updateArtistDto: UpdateArtistDto) {

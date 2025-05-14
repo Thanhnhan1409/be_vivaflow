@@ -22,6 +22,7 @@ export class Pivot_UserFavouriteTrack {
   @ApiPropNumber() trackId: number;
 
   @ApiPropTypeOptional(Track)
+  @Type(() => Track)
   track?: Track;
 }
 

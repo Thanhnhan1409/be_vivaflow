@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AuthData } from 'src/auth/decorator/get-auth-data.decorator';
-import { PlainToInstance } from 'src/helpers';
+import { PlainToInstance, PlainToInstanceList } from 'src/helpers';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User } from './entities/user.entity';
+import { Pivot_UserFavouriteTrack } from 'src/pivot/pivots.entity';
 
 @Injectable()
 export class UserService {
@@ -17,11 +18,13 @@ export class UserService {
   }
 
   async getFavoriteTracks(authData: AuthData) {
-    return this.prisma.user_favourite_track.findMany({
+    const tracks = await this.prisma.user_favourite_track.findMany({
       where: {
         userId: authData.id,
       },
-    });
+      include: { track: true },
+    }); 
+    return PlainToInstanceList(Pivot_UserFavouriteTrack, tracks);
   }
 
   getRecentPlayTracks(authData: AuthData) {
