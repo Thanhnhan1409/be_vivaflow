@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  Post,
+  Body,
 } from '@nestjs/common';
 import { ArtistService } from './artist.service';
 import { FindManyArtistQueryDto } from './dto/findManyArtist.dto';
@@ -17,6 +19,7 @@ import {
   GetAuthData,
 } from 'src/auth/decorator/get-auth-data.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { ToggleLikeTrackDto } from 'src/music-modules/track/dto/toggleLikeTrack.dto';
 // import { CreateArtistDto } from './dto/create-artist.dto';
 // import { UpdateArtistDto } from './dto/update-artist.dto';
 
@@ -95,5 +98,15 @@ export class ArtistController {
   @ApiBearerAuth()
   async getRecentListenArtist(@GetAuthData() authData: AuthData) {
     return await this.artistService.getRecentListenArtist(authData);
+  }
+
+  @Post('toggle-follow')
+  @ApiBearerAuth()
+  @UseGuards(UserGuard)
+  async toggleLikeTrack(
+    @Body('idList') idList: number[],
+    @GetAuthData() authData: AuthData,
+  ) {
+    return await this.artistService.toggleFollowArtist(authData, idList);
   }
 }

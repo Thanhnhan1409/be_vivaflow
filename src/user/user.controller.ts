@@ -5,6 +5,7 @@ import {
   AuthData,
   GetAuthData,
 } from 'src/auth/decorator/get-auth-data.decorator';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('user')
 export class UserController {
@@ -36,32 +37,44 @@ export class UserController {
   }
 
   @Get('recent-play-tracks')
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   getRecentPlayTracks(@GetAuthData() authData: AuthData) {
     return this.userService.getRecentPlayTracks(authData);
   }
 
   @Get('most-play-tracks')
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   getMostPlayTracks(@GetAuthData() authData: AuthData) {
     return this.userService.getMostPlayTracks(authData);
   }
 
   @Get('recent-play-artists')
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   getRecentPlayArtists(@GetAuthData() authData: AuthData) {
     return this.userService.getRecentPlayArtists(authData);
   }
 
   @Get('most-play-artists')
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   getMostPlayArtists(@GetAuthData() authData: AuthData) {
     return this.userService.getMostPlayArtists(authData);
   }
 
   @Get('recent-play-albums')
+  @ApiBearerAuth()
   @UseGuards(UserGuard)
   getRecentPlayAlbums(@GetAuthData() authData: AuthData) {
     return this.userService.getRecentPlayAlbum(authData);
+  }
+
+  @Get('favorite-tracks')
+  @ApiBearerAuth()
+  @UseGuards(UserGuard)
+  getFavoriteTracks(@GetAuthData() authData: AuthData) {
+    return this.userService.getFavoriteTracks(authData);
   }
 }
