@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Delete, UseGuards, Put, Body } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserGuard } from 'src/auth/guard/auth.guard';
 import {
@@ -6,6 +6,7 @@ import {
   GetAuthData,
 } from 'src/auth/decorator/get-auth-data.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -43,32 +44,39 @@ export class UserController {
     return this.userService.getRecentPlayTracks(authData);
   }
 
-  @Get('most-play-tracks')
-  @ApiBearerAuth()
-  @UseGuards(UserGuard)
-  getMostPlayTracks(@GetAuthData() authData: AuthData) {
-    return this.userService.getMostPlayTracks(authData);
-  }
+  // @Get('most-play-tracks')
+  // @ApiBearerAuth()
+  // @UseGuards(UserGuard)
+  // getMostPlayTracks(@GetAuthData() authData: AuthData) {
+  //   return this.userService.getMostPlayTracks(authData);
+  // }
 
-  @Get('recent-play-artists')
-  @ApiBearerAuth()
-  @UseGuards(UserGuard)
-  getRecentPlayArtists(@GetAuthData() authData: AuthData) {
-    return this.userService.getRecentPlayArtists(authData);
-  }
+  // @Get('recent-play-artists')
+  // @ApiBearerAuth()
+  // @UseGuards(UserGuard)
+  // getRecentPlayArtists(@GetAuthData() authData: AuthData) {
+  //   return this.userService.getRecentPlayArtists(authData);
+  // }
 
-  @Get('most-play-artists')
-  @ApiBearerAuth()
-  @UseGuards(UserGuard)
-  getMostPlayArtists(@GetAuthData() authData: AuthData) {
-    return this.userService.getMostPlayArtists(authData);
-  }
+  // @Get('most-play-artists')
+  // @ApiBearerAuth()
+  // @UseGuards(UserGuard)
+  // getMostPlayArtists(@GetAuthData() authData: AuthData) {
+  //   return this.userService.getMostPlayArtists(authData);
+  // }
 
   @Get('recent-play-albums')
   @ApiBearerAuth()
   @UseGuards(UserGuard)
   getRecentPlayAlbums(@GetAuthData() authData: AuthData) {
     return this.userService.getRecentPlayAlbum(authData);
+  }
+
+  @Put('update-profile')
+  @ApiBearerAuth()
+  @UseGuards(UserGuard)
+  updateUserProfile(@GetAuthData() authData: AuthData, @Body() userInfor: UpdateUserDto) {
+    return this.userService.update(authData.id, userInfor);
   }
 
   @Get('favorite-tracks')
