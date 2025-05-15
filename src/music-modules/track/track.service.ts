@@ -19,13 +19,14 @@ export class TrackService {
   //   return 'This action adds a new track';
   // }
 
-  async findAll(page = 1, limit = 10) {
+  async findAll(searchText = '', page = 1, limit = 10) {
     const skip = (Number(page) - 1) * Number(limit);
   
     const [tracks, total] = await this.prisma.$transaction([
       this.prisma.track.findMany({
         skip,
         take: Number(limit),
+        where: { name: { contains: searchText.trim() }, },
         orderBy: { temp_popularity : 'desc' },
       }),
       this.prisma.track.count(),

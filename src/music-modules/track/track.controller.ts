@@ -36,11 +36,12 @@ export class TrackController {
   async findAll(
     @Query('pageNumber') page = '1',
     @Query('pageSize') limit = '10',
+    @Query('searchText') searchText = ''
   ) {
     const pageNumber = parseInt(page, 10) || 1;
     const limitNumber = parseInt(limit, 10) || 10;
 
-    return await this.trackService.findAll(pageNumber, limitNumber);
+    return await this.trackService.findAll(searchText, pageNumber, limitNumber);
   }
 
   @Get(':id')
@@ -77,10 +78,6 @@ export class TrackController {
     @Param('id') id: string,
     @GetAuthData() authData: AuthData,
   ) {
-    console.log('id', id);
-    
-    console.log('auth', authData);
-    
     return await this.trackService.listenTrack(+id, authData);
   }
 
