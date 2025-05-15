@@ -93,11 +93,11 @@ export class ArtistController {
     return await this.artistService.findOne_WithAlbums(+id);
   }
 
-  @Get('recent-listen')
+  @Get('followed')
   @UseGuards(UserGuard)
   @ApiBearerAuth()
-  async getRecentListenArtist(@GetAuthData() authData: AuthData) {
-    return await this.artistService.getRecentListenArtist(authData);
+  async getFollowingArtists(@GetAuthData() authData: AuthData) {
+    return await this.artistService.getFollowingArtists(authData);
   }
 
   @Post('toggle-follow')

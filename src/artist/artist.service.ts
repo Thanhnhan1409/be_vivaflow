@@ -144,10 +144,11 @@ export class ArtistService {
     return PlainToInstance(ArtistWithForeign, artist);
   }
 
-  async getRecentListenArtist(authData: AuthData) {
+  async getFollowingArtists(authData: AuthData) {
     const recentArtists = await this.prisma.user_listen_artist.findMany({
       where: {
         userId: authData.id,
+        listenCount: 1,
       },
       orderBy: { updatedAt: 'desc' },
       take: 20,

@@ -26,7 +26,7 @@ export class TrackService {
       this.prisma.track.findMany({
         skip,
         take: Number(limit),
-        where: { name: { contains: searchText.trim() }, },
+        where: { title: { contains: searchText.trim() }, },
         orderBy: { temp_popularity : 'desc' },
       }),
       this.prisma.track.count(),
