@@ -95,4 +95,9 @@ export class TrackController {
   async findOneWithAlbum(@Param('id') id: string) {
     return await this.trackService.tracksInAlbum(+id);
   }
+
+  @Get('get-lyrics/:id')
+  async getLyrics(@Param('id') id: string) {
+    return await this.trackService.getLyric(+id);
+  }
 }

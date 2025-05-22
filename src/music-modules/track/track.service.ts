@@ -7,7 +7,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PlainToInstance, PlainToInstanceList } from 'src/helpers';
 import { FindManyTrackQueryDto } from './dto/findManyTrack.dto';
 import { isNil } from 'lodash';
-import { Track, TrackWithForeign } from './entities/track.entity';
+import { Lyrics, Track, TrackWithForeign } from './entities/track.entity';
 import * as moment from 'moment';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class TrackService {
       this.prisma.track.findMany({
         skip,
         take: Number(limit),
-        where: { name: { contains: searchText.trim() }, },
+        where: { title: { contains: searchText.trim() }, },
         orderBy: { temp_popularity : 'desc' },
       }),
       this.prisma.track.count(),
@@ -256,5 +256,15 @@ export class TrackService {
     });
 
     return PlainToInstanceList(Track, tracks);
+  }
+
+  async getLyric(trackId: number) {
+    const lyrics = await this.prisma.lyrics.findFirst({
+      where: {
+        id: Number(trackId),
+      },
+    });
+
+    return PlainToInstance(Lyrics, lyrics);
   }
 }
