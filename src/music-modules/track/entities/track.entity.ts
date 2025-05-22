@@ -22,6 +22,14 @@ export class Track {
   @ApiPropNumber() listenCount: number;
   @ApiPropNumber() albumId: number;
   @ApiPropNumber() audioId: number;
+  @ApiPropString() previewAudioUrl: string;
+}
+
+export class Lyrics {
+  @ApiPropString() id: number;
+  @ApiPropString() lyric: string;
+  @ApiPropNumber() trackId: number;
+  @ApiPropString() content: string;
 }
 
 export class TrackWithForeign extends Track {
