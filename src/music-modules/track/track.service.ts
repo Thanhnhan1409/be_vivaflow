@@ -9,6 +9,7 @@ import { FindManyTrackQueryDto } from './dto/findManyTrack.dto';
 import { isNil } from 'lodash';
 import { Lyrics, Track, TrackWithForeign } from './entities/track.entity';
 import * as moment from 'moment';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class TrackService {
@@ -65,111 +66,66 @@ export class TrackService {
   async findMany(filter: FindManyTrackQueryDto) {
     const page = Number(filter.pageNumber) || 1;
     const limit = Number(filter.pageSize) || 10;
+    
     const skip = (page - 1) * limit;
-    const [tracks, total] = await this.prisma.$transaction([
-      this.prisma.track.findMany({
-      skip,
-      take: limit,
-      where: {
-        id: filter.ids ? { in: filter.ids.map(id => Number(id)) } : undefined,
-        spotifyTrackId: filter.spotifyIds
-        ? { in: filter.spotifyIds }
-        : undefined,
-        OR: [
-        {
-          mainArtist:
-          !isNil(filter.artistId) || !isNil(filter.spotifyArtistId)
-            ? {
-            id: !isNil(filter.artistId) ? filter.artistId : undefined,
-            spotifyArtistId: !isNil(filter.spotifyArtistId)
-              ? filter.spotifyArtistId
-              : undefined,
-            }
-            : undefined,
+    const cleanedSpotifyIds = (filter.spotifyIds || []).map(id => id.trim()).filter(Boolean);
+    const cleanedIds = (filter.ids || []).filter(id => typeof id === 'number' && !isNaN(id));
+    const artistConditions = [];
+    if (!isNil(filter.artistId) || !isNil(filter.spotifyArtistId)) {
+      artistConditions.push({
+        mainArtist: {
+          ...(filter.artistId != null && { id: filter.artistId }),
+          ...(filter.spotifyArtistId != null && { spotifyArtistId: filter.spotifyArtistId }),
         },
-        {
-          secondary_artist_track_links:
-          !isNil(filter.artistId) || !isNil(filter.spotifyArtistId)
-            ? {
-              some: {
-              artist: {
-                id: !isNil(filter.artistId)
-                ? filter.artistId
-                : undefined,
-                spotifyArtistId: !isNil(filter.spotifyArtistId)
-                ? filter.spotifyArtistId
-                : undefined,
-              },
-              },
-            }
-            : undefined,
-        },
-        ],
-        albumId: filter.albumId ? filter.albumId : undefined,
-        playlist_track_links: filter.playlistId
-        ? {
+      });
+      artistConditions.push({
+        secondary_artist_track_links: {
           some: {
-            playlistId: filter.playlistId,
+            artist: {
+              ...(filter.artistId != null && { id: filter.artistId }),
+              ...(filter.spotifyArtistId != null && { spotifyArtistId: filter.spotifyArtistId }),
+            },
           },
+        },
+      });
+    }
+
+    const where: Prisma.trackWhereInput = {
+      id: cleanedIds.length > 0 ? { in: cleanedIds } : undefined,
+      spotifyTrackId: cleanedSpotifyIds.length > 0 ? { in: cleanedSpotifyIds } : undefined,
+      albumId: filter.albumId ?? undefined,
+      playlist_track_links: filter.playlistId
+        ? {
+            some: {
+              playlistId: filter.playlistId,
+            },
           }
         : undefined,
-      },
+      ...(artistConditions.length > 0 ? { OR: artistConditions } : {}),
+    };
+
+
+    const tracks = await this.prisma.track.findMany({
+      skip,
+      take: limit,
+      where,
       include: {
         mainArtist: true,
         secondary_artist_track_links: {
-        include: {
-          artist: true,
-        },
-        },
-      },
-      }),
-      this.prisma.track.count({
-      where: {
-        id: filter.ids ? { in: filter.ids.map(id => Number(id)) } : undefined,
-        spotifyTrackId: filter.spotifyIds ? { in: filter.spotifyIds } : undefined,
-        OR: [
-        {
-          mainArtist:
-          filter.artistId || filter.spotifyArtistId
-            ? {
-              id: filter.artistId || undefined,
-              spotifyArtistId: filter.spotifyArtistId || undefined,
-            }
-            : undefined,
-        },
-        {
-          secondary_artist_track_links:
-          filter.artistId || filter.spotifyArtistId
-            ? {
-              some: {
-              artist: {
-                id: filter.artistId || undefined,
-                spotifyArtistId: filter.spotifyArtistId || undefined,
-              },
-              },
-            }
-            : undefined,
-        },
-        ],
-        albumId: filter.albumId || undefined,
-        playlist_track_links: filter.playlistId
-        ? {
-          some: {
-            playlistId: filter.playlistId,
+          include: {
+            artist: true,
           },
-          }
-        : undefined,
+        },
       },
-      }),
-    ]);
+    });
 
     return  {
       data: PlainToInstanceList(TrackWithForeign, tracks),
       meta: {
-        total,
+        total: tracks.length,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(tracks.length / limit),
       },
     };
   }

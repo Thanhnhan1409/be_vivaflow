@@ -63,8 +63,19 @@ export class AuthService {
 
     if (!passwordMatches)
       throw new ForbiddenException(ErrorMessages.AUTH.CREDENTIALS_INCORRECT);
-
-    return this.signToken(user);
+    let firstLogin = false;
+    if (!user.updatedAt || user.updatedAt === 0) {
+      firstLogin = true;
+  
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          updatedAt: Math.floor(Date.now() / 1000),
+        },
+      });
+    } 
+  
+    return this.signToken(user, firstLogin);
   }
 
   // async resetPasswordRequest(dto: RequestResetPasswordDto): Promise<void> {
@@ -123,7 +134,8 @@ export class AuthService {
 
   async signToken(
     user: user,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+    loginStatus?: boolean
+  ): Promise<{ accessToken: string; refreshToken: string; firstLogin: boolean }> {
     const pickedFields: string[] = ['id', 'email', 'name', 'role', 'username'];
     const payload = pick(user, pickedFields);
 
@@ -140,6 +152,7 @@ export class AuthService {
     return {
       accessToken: accessToken,
       refreshToken: refreshToken,
+      firstLogin: loginStatus
     };
   }
 
@@ -170,6 +183,7 @@ export class AuthService {
         id: true,
         email: true,
         username: true,
+        fullname: true,
         pwdHash: false,
       },
     });
