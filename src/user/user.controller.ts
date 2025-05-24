@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Delete, UseGuards, Put, Body, Post, UploadedFile, UseInterceptors, Req } from '@nestjs/common';
+import { Controller, Get, Param, Delete, UseGuards, Put, Body, Post, UploadedFile, UseInterceptors, Req, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserGuard } from 'src/auth/guard/auth.guard';
 import {
@@ -89,20 +89,17 @@ export class UserController {
   }
 
   @Post('upload-image')
-  @UseInterceptors(FileInterceptor('file', {
-    limits: {
-      fileSize: 5 * 1024 * 1024,
-    },
-    fileFilter: (req, file, cb) => {
-      if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
-        return cb(new Error('Chỉ chấp nhận ảnh jpg, jpeg, png'), false);
+  async uploadImage(@Req() req: any, @Res() res: any) {
+    try {
+      if (!req.file) {
+        return res.status(400).send({ message: 'File không được gửi lên' });
       }
-      cb(null, true);
-    },
-  }))
-  async uploadImage(@Req() req: FastifyRequest) {
-    const file = await req.file();
-    const buffer = await file.toBuffer();
-    return this.userService.uploadImage(file.filename);
+      // req.file.path là đường dẫn file tạm do multer lưu
+      const result = await this.userService.uploadImage(req.file.path);
+      return res.send(result);
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      return res.status(500).send({ message: 'Upload thất bại: ' + error.message });
+    }
   }
 }

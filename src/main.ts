@@ -13,7 +13,6 @@ import * as path from 'path';
 
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './helpers';
-import multipart from '@fastify/multipart';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
