@@ -20,7 +20,8 @@ async function bootstrap() {
     new FastifyAdapter(),
     { rawBody: true },
   );
-
+  
+  // await app.register(multipart);
   app.setGlobalPrefix('api');
 
   const configService = app.get(ConfigService);
