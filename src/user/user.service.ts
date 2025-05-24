@@ -137,6 +137,7 @@ export class UserService {
         email: updateUserDto.email,
         fullname: updateUserDto.fullname,
         username: updateUserDto.username,
+        avatarImageUrl: updateUserDto.avatarImageUrl,
         updatedAt: this.nowUnix(),
       },
     });

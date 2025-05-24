@@ -23,4 +23,7 @@ export class UpdateUserDto {
   @ApiProperty({ type: String, required: true, nullable: false })
   @Matches(/^[a-zA-Z0-9_]{6,20}$/)
   username: string;
+  
+  @IsString()
+  avatarImageUrl: string;
 }
