@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Delete, UseGuards, Put, Body } from '@nestjs/common';
+import { Controller, Get, Param, Delete, UseGuards, Put, Body, Post, UploadedFile, UseInterceptors, Req } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserGuard } from 'src/auth/guard/auth.guard';
 import {
@@ -7,6 +7,8 @@ import {
 } from 'src/auth/decorator/get-auth-data.decorator';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FastifyRequest } from 'fastify';
 
 @Controller('user')
 export class UserController {
@@ -84,5 +86,23 @@ export class UserController {
   @UseGuards(UserGuard)
   getFavoriteTracks(@GetAuthData() authData: AuthData) {
     return this.userService.getFavoriteTracks(authData);
+  }
+
+  @Post('upload-image')
+  @UseInterceptors(FileInterceptor('file', {
+    limits: {
+      fileSize: 5 * 1024 * 1024,
+    },
+    fileFilter: (req, file, cb) => {
+      if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+        return cb(new Error('Chỉ chấp nhận ảnh jpg, jpeg, png'), false);
+      }
+      cb(null, true);
+    },
+  }))
+  async uploadImage(@Req() req: FastifyRequest) {
+    const file = await req.file();
+    const buffer = await file.toBuffer();
+    return this.userService.uploadImage(file.filename);
   }
 }

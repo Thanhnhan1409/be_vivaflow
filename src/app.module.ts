@@ -11,6 +11,7 @@ import { PlaylistModule } from './playlist/playlist.module';
 import { UserModule } from './user/user.module';
 import AppConfig from './config/configuration';
 import { AuthModule } from './auth/auth.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
     ArtistModule,
     PlaylistModule,
     UserModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

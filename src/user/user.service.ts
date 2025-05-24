@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { AuthData } from 'src/auth/decorator/get-auth-data.decorator';
 import { PlainToInstance, PlainToInstanceList } from 'src/helpers';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -6,14 +6,17 @@ import { User } from './entities/user.entity';
 import { Pivot_UserFavouriteTrack } from 'src/pivot/pivots.entity';
 import { Track } from 'src/music-modules/track/entities/track.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class UserService {
   // create(createUserDto: CreateUserDto) {
   //   return 'This action adds a new user';
   // }
-
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
   findAll() {
     return `This action returns all user`;
@@ -141,5 +144,14 @@ export class UserService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async uploadImage(file: string) {
+    try {
+      return await this.cloudinaryService.uploadFile(file);
+    } catch (error) {
+      console.error('❌ Upload error:', error);
+      throw new InternalServerErrorException('Upload thất bại: ' + error.message);
+    }
   }
 }
