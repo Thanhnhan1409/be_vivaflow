@@ -9,21 +9,23 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { AuthData } from 'src/auth/decorator/get-auth-data.decorator';
 import { AddTrackToPlaylistDto } from './dto/addTrackToPlaylist.dto';
 import { Track } from 'src/music-modules/track/entities/track.entity';
+import { PlayListDTO } from './dto/create-playlist.dto';
 
 // import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 @Injectable()
 export class PlaylistService {
   constructor(private prisma: PrismaService) {}
 
-  async create(authData: AuthData) {
+  async create(authData: AuthData, playList: PlayListDTO) {
     const createdCount = await this.prisma.playlist.count({
       where: { ownerUserId: authData.id },
     });
 
     const newPlaylist = await this.prisma.playlist.create({
       data: {
-        coverImageUrl: 'https://via.placeholder.com/150?text=Playlist+Cover',
-        name: `Playlist ${createdCount + 1}`,
+        coverImageUrl: playList.coverImageUrl,
+        name: playList.playListName,
+        description: playList.description || '',
         ownerUser: {
           connect: {
             id: authData.id,

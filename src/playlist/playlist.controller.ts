@@ -16,6 +16,7 @@ import {
 import { AddTrackToPlaylistDto } from './dto/addTrackToPlaylist.dto';
 import { UserGuard } from 'src/auth/guard/auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { PlayListDTO } from './dto/create-playlist.dto';
 // import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 
 @Controller('playlist')
@@ -28,8 +29,10 @@ export class PlaylistController {
   create(
     @GetAuthData()
     authData: AuthData,
+    @Body()
+    playList: PlayListDTO
   ) {
-    return this.playlistService.create(authData);
+    return this.playlistService.create(authData, playList);
   }
 
   @Get()
