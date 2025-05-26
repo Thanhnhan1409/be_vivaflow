@@ -195,30 +195,30 @@ export class TrackService {
   async toggleLikeTrack(dto: ToggleLikeTrackDto, authData: AuthData) {
     const { toggleOn, trackId } = dto;
     await this.prisma.track.findFirstOrThrow({
-      where: { id: Number(dto.trackId) },
+      where: { id: Number(trackId) },
     });
 
     const like = await this.prisma.user_favourite_track.findFirst({
       where: {
-        trackId,
+        trackId: Number(trackId),
         userId: authData.id,
       },
     });
-    
-    // like: 1, unlike: 0
-    if (toggleOn === 1 && !like) {
-      await this.prisma.user_favourite_track.create({
-        data: {
-          trackId,
-          userId: authData.id,
-        },
-      });
-    } else if (!(toggleOn === 0) && like) {
-      await this.prisma.user_favourite_track.delete({
-        where: {
-          id: like.id,
-        },
-      });
+    if (toggleOn === 1) {
+      if (!like) {
+        await this.prisma.user_favourite_track.create({
+          data: {
+            trackId: Number(trackId),
+            userId: authData.id,
+          },
+        });
+      }
+    } else if (toggleOn === 0) {
+      if (like) {
+        await this.prisma.user_favourite_track.delete({
+          where: { id: like.id },
+        });
+      }
     }
 
     return true;
