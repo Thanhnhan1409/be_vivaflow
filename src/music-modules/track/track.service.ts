@@ -28,12 +28,22 @@ export class TrackService {
         take: Number(limit),
         where: { title: { contains: searchText.trim() }, },
         orderBy: { temp_popularity : 'desc' },
+        include: {
+          album: {
+            select: {
+              coverImageUrl: true,
+            },
+          },
+        },
       }),
       this.prisma.track.count(),
     ]);
   
     return {
-      data: PlainToInstanceList(Track, tracks),
+      data: PlainToInstanceList(Track, tracks.map((track) => ({
+        ...track,
+        coverImageUrl: track.album?.coverImageUrl || null,
+      }))),
       meta: {
         total,
         page,
@@ -48,9 +58,19 @@ export class TrackService {
       where: {
         id,
       },
+      include: {
+        album: {
+          select: {
+            coverImageUrl: true,
+          },
+        },
+      },
     });
 
-    return PlainToInstance(Track, track);
+    return PlainToInstance(Track, {
+      ...track,
+      coverImageUrl: track?.album?.coverImageUrl || null,
+    });
   }
 
   // update(id: number, updateTrackDto: UpdateTrackDto) {
@@ -66,113 +86,91 @@ export class TrackService {
     const page = Number(filter.pageNumber) || 1;
     const limit = Number(filter.pageSize) || 10;
     const skip = (page - 1) * limit;
+  
+    // Chuẩn bị phần where
+    const where: any = {};
+  
+    // Lọc theo ids
+    if (filter.ids?.length) {
+      where.id = { in: filter.ids.map(Number) };
+    }
+  
+    // Lọc theo spotifyIds
+    if (filter.spotifyIds?.length) {
+      where.spotifyTrackId = { in: filter.spotifyIds };
+    }
+  
+    // Lọc theo albumId
+    if (filter.albumId) {
+      where.albumId = filter.albumId;
+    }
+  
+    // Lọc theo playlistId
+    if (filter.playlistId) {
+      where.playlist_track_links = {
+        some: {
+          playlistId: filter.playlistId,
+        },
+      };
+    }
+  
+    // Lọc theo artistId hoặc spotifyArtistId
+    const artistConditions = [];
+    if (filter.artistId || filter.spotifyArtistId) {
+      artistConditions.push({
+        mainArtist: {
+          ...(filter.artistId ? { id: filter.artistId } : {}),
+          ...(filter.spotifyArtistId ? { spotifyArtistId: filter.spotifyArtistId } : {}),
+        },
+      });
+  
+      artistConditions.push({
+        secondary_artist_track_links: {
+          some: {
+            artist: {
+              ...(filter.artistId ? { id: filter.artistId } : {}),
+              ...(filter.spotifyArtistId ? { spotifyArtistId: filter.spotifyArtistId } : {}),
+            },
+          },
+        },
+      });
+    }
+  
+    if (artistConditions.length > 0) {
+      where.OR = artistConditions;
+    }
+  
+    // Thực hiện query
     const [tracks, total] = await this.prisma.$transaction([
       this.prisma.track.findMany({
-      skip,
-      take: limit,
-      where: {
-        id: filter.ids ? { in: filter.ids.map(id => Number(id)) } : undefined,
-        spotifyTrackId: filter.spotifyIds
-        ? { in: filter.spotifyIds }
-        : undefined,
-        OR: [
-        {
-          mainArtist:
-          !isNil(filter.artistId) || !isNil(filter.spotifyArtistId)
-            ? {
-            id: !isNil(filter.artistId) ? filter.artistId : undefined,
-            spotifyArtistId: !isNil(filter.spotifyArtistId)
-              ? filter.spotifyArtistId
-              : undefined,
-            }
-            : undefined,
-        },
-        {
-          secondary_artist_track_links:
-          !isNil(filter.artistId) || !isNil(filter.spotifyArtistId)
-            ? {
-              some: {
-              artist: {
-                id: !isNil(filter.artistId)
-                ? filter.artistId
-                : undefined,
-                spotifyArtistId: !isNil(filter.spotifyArtistId)
-                ? filter.spotifyArtistId
-                : undefined,
-              },
-              },
-            }
-            : undefined,
-        },
-        ],
-        albumId: filter.albumId ? filter.albumId : undefined,
-        playlist_track_links: filter.playlistId
-        ? {
-          some: {
-            playlistId: filter.playlistId,
-          },
-          }
-        : undefined,
-      },
-      include: {
-        mainArtist: true,
-        secondary_artist_track_links: {
+        skip,
+        take: limit,
+        where,
         include: {
-          artist: true,
-        },
-        },
-      },
-      }),
-      this.prisma.track.count({
-      where: {
-        id: filter.ids ? { in: filter.ids.map(id => Number(id)) } : undefined,
-        spotifyTrackId: filter.spotifyIds ? { in: filter.spotifyIds } : undefined,
-        OR: [
-        {
-          mainArtist:
-          filter.artistId || filter.spotifyArtistId
-            ? {
-              id: filter.artistId || undefined,
-              spotifyArtistId: filter.spotifyArtistId || undefined,
-            }
-            : undefined,
-        },
-        {
-          secondary_artist_track_links:
-          filter.artistId || filter.spotifyArtistId
-            ? {
-              some: {
-              artist: {
-                id: filter.artistId || undefined,
-                spotifyArtistId: filter.spotifyArtistId || undefined,
-              },
-              },
-            }
-            : undefined,
-        },
-        ],
-        albumId: filter.albumId || undefined,
-        playlist_track_links: filter.playlistId
-        ? {
-          some: {
-            playlistId: filter.playlistId,
+          mainArtist: true,
+          secondary_artist_track_links: {
+            include: {
+              artist: true,
+            },
           },
-          }
-        : undefined,
-      },
+          album: {
+            select: {
+              coverImageUrl: true,
+            },
+          },
+        },
       }),
+  
+      this.prisma.track.count({ where }),
     ]);
-
-    return  {
-      data: PlainToInstanceList(TrackWithForeign, tracks),
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+  
+    return { data: PlainToInstanceList(Track, tracks.map((track) => ({
+      ...track,
+      coverImageUrl: track.album?.coverImageUrl || null,
+    }))),
+    total };
   }
+  
 
   async getRecentListenTracks(authData: AuthData) {
     const recentTracks = await this.prisma.user_listen_track.findMany({
@@ -181,14 +179,25 @@ export class TrackService {
       },
       orderBy: { updatedAt: 'desc' },
       include: {
-        track: true,
+        track: {
+          include: {
+            album: {
+              select: {
+                coverImageUrl: true,
+              },
+            },
+          },
+        },
       },
       take: 20,
     });
 
     return PlainToInstanceList(
       Track,
-      recentTracks.map((i) => i.track),
+      recentTracks.map((i) => ({
+        ...i.track,
+        coverImageUrl: i.track.album?.coverImageUrl || null,
+      })),
     );
   }
 
@@ -253,9 +262,22 @@ export class TrackService {
       where: {
         albumId: Number(albumId),
       },
+      include: {
+        album: {
+          select: {
+            coverImageUrl: true,
+          },
+        },
+      },  
     });
 
-    return PlainToInstanceList(Track, tracks);
+    return PlainToInstanceList(
+      Track,
+      tracks.map((track) => ({
+        ...track,
+        coverImageUrl: track.album?.coverImageUrl || null,
+      })),
+    );
   }
 
   async getLyric(trackId: number) {

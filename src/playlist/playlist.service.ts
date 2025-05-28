@@ -10,6 +10,7 @@ import { AuthData } from 'src/auth/decorator/get-auth-data.decorator';
 import { AddTrackToPlaylistDto } from './dto/addTrackToPlaylist.dto';
 import { Track } from 'src/music-modules/track/entities/track.entity';
 import { PlayListDTO } from './dto/create-playlist.dto';
+import * as moment from 'moment';
 
 // import { UpdatePlaylistDto } from './dto/update-playlist.dto';
 @Injectable()
@@ -89,55 +90,38 @@ export class PlaylistService {
       throw new UnauthorizedException('You are not the owner of this playlist');
     }
 
-    await this.prisma.playlist.update({
-      where: { id: playlistId },
+    await this.prisma.playlist_track_link.create({
       data: {
-        playlist_track_links: {
-          connect: {
-            id: trackId,
-          },
-        },
+        playlist: { connect: { id: playlistId } },
+        track: { connect: { id: trackId } },
+        no: 1,
+        createdAt: moment().unix(),
       },
     });
-  }
+  }  
 
-  async removeTrackFromPlaylist(
-    playlistId: number,
-    trackId: number,
-    authData: AuthData,
-  ) {
+  async removeTrackFromPlaylist(dto: { playlistId: number; trackId: number }, authData: AuthData) {
+    const { playlistId, trackId } = dto;
 
     await this.prisma.track.findFirstOrThrow({
-      where: { id: trackId },
+      where: { id: Number(trackId) },
     });
 
     const playlist = await this.prisma.playlist.findFirstOrThrow({
       where: { id: playlistId },
-      include: {
-        playlist_track_links: true,
-      },
     });
-
+  
     if (playlist.ownerUserId !== authData.id) {
       throw new UnauthorizedException('You are not the owner of this playlist');
     }
-    if (
-      playlist.playlist_track_links.findIndex((i) => i.id === trackId) === -1
-    ) {
-      throw new BadRequestException('This track is not in this playlist');
-    }
 
-    await this.prisma.playlist.update({
-      where: { id: playlistId },
-      data: {
-        playlist_track_links: {
-          disconnect: {
-            id: trackId,
-          },
-        },
+    await this.prisma.playlist_track_link.deleteMany({
+      where: {
+        playlistId: playlistId,
+        trackId: trackId,
       },
     });
-  }
+  }  
 
   // update(id: number, updatePlaylistDto: UpdatePlaylistDto) {
   //   return `This action updates a #${id} playlist`;

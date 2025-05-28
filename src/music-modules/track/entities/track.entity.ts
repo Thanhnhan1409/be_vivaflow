@@ -23,6 +23,7 @@ export class Track {
   @ApiPropNumber() albumId: number;
   @ApiPropNumber() audioId: number;
   @ApiPropString() previewAudioUrl: string;
+  @ApiPropString() coverImageUrl: string;
 }
 
 export class Lyrics {
