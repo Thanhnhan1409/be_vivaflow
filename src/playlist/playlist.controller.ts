@@ -69,6 +69,16 @@ export class PlaylistController {
     return this.playlistService.addTrackToPlaylist(body, authData);
   }
 
+  @Post('/remove-track')
+  @ApiBearerAuth()
+  @UseGuards(UserGuard)
+  removeTrackFromPlaylist(
+    @Body() body: AddTrackToPlaylistDto,
+    @GetAuthData() authData: AuthData,
+  ) {
+    return this.playlistService.removeTrackFromPlaylist(body, authData);
+  }
+
   // @Patch(':id')
   // update(
   //   @Param('id') id: string,
