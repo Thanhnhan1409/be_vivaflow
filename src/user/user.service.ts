@@ -27,9 +27,28 @@ export class UserService {
       where: {
         userId: authData.id,
       },
-      include: { track: true },
+      include: { 
+        track: {
+          include: {
+            album: {
+              select: {
+                coverImageUrl: true,
+              },
+            },
+          },
+        }
+      },
     }); 
-    return PlainToInstanceList(Pivot_UserFavouriteTrack, tracks);
+    return PlainToInstanceList(
+      Pivot_UserFavouriteTrack,
+      tracks.map((item) => ({
+        ...item,
+        track: {
+          ...item.track,
+          coverImageUrl: item.track.album?.coverImageUrl || null,
+        },
+      }))
+    );
   }
 
   async getRecentPlayTracks(authData: AuthData) {

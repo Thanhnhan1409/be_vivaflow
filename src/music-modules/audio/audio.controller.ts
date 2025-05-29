@@ -31,4 +31,9 @@ export class AudioController {
   remove(@Param('id') id: string) {
     return this.audioService.remove(+id);
   }
+
+  @Get('label')
+  async getLabelFromAudio() {
+    return this.audioService.getLabelFromAudio();
+  }
 }
