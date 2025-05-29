@@ -52,18 +52,37 @@ export class PlaylistService {
   }
 
   async findOneWithForeign(id: number) {
-    return PlainToInstance(
-      PlaylistWithForeign,
-      await this.prisma.playlist.findFirstOrThrow({
+    const playlist = await this.prisma.playlist.findFirstOrThrow({
         where: { id },
         include: {
           ownerUser: true,
           playlist_track_links: {
-            include: { track: true },
+            include: { 
+              track: {
+                include: {
+                  album: {
+                    select: {
+                      coverImageUrl: true,
+                    },
+                  },
+                },
+              },
+            },
           },
         },
-      }),
-    );
+      });
+      const playlistWithCover = {
+        ...playlist,
+        playlist_track_links: playlist.playlist_track_links.map(link => ({
+          ...link,
+          track: {
+            ...link.track,
+            coverImageUrl: link.track?.album?.coverImageUrl ?? null,
+          },
+        })),
+      };
+    
+      return PlainToInstance(PlaylistWithForeign, playlistWithCover);
   }
 
   async getMyPlaylists(authData: AuthData) {
@@ -153,7 +172,7 @@ export class PlaylistService {
       (i) => i.track.spotifyTrackId,
     );
 
-    const recommendationSpotifyTrackIds: string[] = []; // call recommendation service here
+    const recommendationSpotifyTrackIds: string[] = [];
 
     const recommendationTracks = await this.prisma.track.findMany({
       where: {

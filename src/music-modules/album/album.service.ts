@@ -47,10 +47,26 @@ export class AlbumService {
   async findOneWithTrack(id: number) {
     const album = await this.prisma.album.findFirstOrThrow({
       where: { id: Number(id) },
-      include: { tracks: true },
+      include: {
+        tracks: {
+          include: {
+            album: {
+              select: {
+                coverImageUrl: true,
+              },
+            },
+          },
+        },
+      },
     });
 
-    return PlainToInstance(AlbumWithTrack, album);
+    return PlainToInstance(AlbumWithTrack, {
+      ...album,
+      tracks: album.tracks.map((track) => ({
+        ...track,
+        coverImageUrl: track.album?.coverImageUrl || null,
+      })),
+    });
   }
 
   async findOneWithForeign(id: number) {

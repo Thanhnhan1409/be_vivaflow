@@ -119,9 +119,25 @@ export class ArtistService {
     console.log('findOne', id);
     const artist = await this.prisma.artist.findFirstOrThrow({
       where: { id },
-      include: { tracks: true },
+      include: {
+        tracks: {
+          include: {
+            album: {
+              select: {
+                coverImageUrl: true,
+              },
+            },
+          },
+        } 
+      },
     });
-    return PlainToInstance(ArtistWithForeign, artist);
+    return PlainToInstance(ArtistWithForeign, {
+      ...artist,
+      tracks: artist.tracks.map((track) => ({
+        ...track,
+        coverImageUrl: track.album?.coverImageUrl || null,
+      }))
+    });
   }
 
   async findOne_WithAllForeign(id: number) {
