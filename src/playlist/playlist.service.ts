@@ -65,6 +65,11 @@ export class PlaylistService {
                       coverImageUrl: true,
                     },
                   },
+                  audio: {
+                    select: {
+                      fullUrl: true,
+                    }
+                  }
                 },
               },
             },
@@ -78,6 +83,7 @@ export class PlaylistService {
           track: {
             ...link.track,
             coverImageUrl: link.track?.album?.coverImageUrl ?? null,
+            fullUrl: link.track?.audio?.fullUrl ?? null,
           },
         })),
       };

@@ -34,6 +34,11 @@ export class TrackService {
               coverImageUrl: true,
             },
           },
+          audio: {
+            select: {
+              fullUrl: true,
+            }
+          }
         },
       }),
       this.prisma.track.count(),
@@ -43,6 +48,7 @@ export class TrackService {
       data: PlainToInstanceList(Track, tracks.map((track) => ({
         ...track,
         coverImageUrl: track.album?.coverImageUrl || null,
+        fullUrl: track.audio?.fullUrl || null,
       }))),
       meta: {
         total,
@@ -64,12 +70,18 @@ export class TrackService {
             coverImageUrl: true,
           },
         },
+        audio: {
+          select: {
+            fullUrl: true,
+          }
+        }
       },
     });
 
     return PlainToInstance(Track, {
       ...track,
       coverImageUrl: track?.album?.coverImageUrl || null,
+      fullUrl: track?.audio?.fullUrl || null,
     });
   }
 
@@ -158,6 +170,11 @@ export class TrackService {
               coverImageUrl: true,
             },
           },
+          audio: {
+            select: {
+              fullUrl: true,
+            }
+          }
         },
       }),
   
@@ -167,6 +184,7 @@ export class TrackService {
     return { data: PlainToInstanceList(Track, tracks.map((track) => ({
       ...track,
       coverImageUrl: track.album?.coverImageUrl || null,
+      fullUrl: track.audio?.fullUrl || null,
     }))),
     total };
   }
@@ -186,6 +204,11 @@ export class TrackService {
                 coverImageUrl: true,
               },
             },
+            audio: {
+              select: {
+                fullUrl: true,
+              }
+            }
           },
         },
       },
@@ -197,6 +220,7 @@ export class TrackService {
       recentTracks.map((i) => ({
         ...i.track,
         coverImageUrl: i.track.album?.coverImageUrl || null,
+        fullUrl: i.track.audio?.fullUrl || null,
       })),
     );
   }
@@ -268,6 +292,11 @@ export class TrackService {
             coverImageUrl: true,
           },
         },
+        audio: {
+          select: {
+            fullUrl: true,
+          }
+        }
       },  
     });
 
@@ -276,6 +305,7 @@ export class TrackService {
       tracks.map((track) => ({
         ...track,
         coverImageUrl: track.album?.coverImageUrl || null,
+        fullUrl: track.audio?.fullUrl || null,
       })),
     );
   }
@@ -283,7 +313,7 @@ export class TrackService {
   async getLyric(trackId: number) {
     const lyrics = await this.prisma.lyrics.findFirst({
       where: {
-        id: Number(trackId),
+        trackId: Number(trackId),
       },
     });
 

@@ -22,6 +22,7 @@ export class User {
   @ApiPropString() avatarImageUrl: string;
   @ApiPropNumber() createdAt: number;
   @ApiPropNumber() updatedAt: number;
+  @ApiPropString() fullname: string;
 }
 
 export class UserWithForeign extends User {

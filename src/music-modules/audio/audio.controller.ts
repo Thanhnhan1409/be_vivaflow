@@ -1,7 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { AudioService } from './audio.service';
 import { CreateAudioDto } from './dto/create-audio.dto';
-import { UpdateAudioDto } from './dto/update-audio.dto';
+import { UpdateAudioUrlDto } from './dto/update-audio.dto';
 
 @Controller('audio')
 export class AudioController {
@@ -22,10 +22,10 @@ export class AudioController {
     return this.audioService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAudioDto: UpdateAudioDto) {
-    return this.audioService.update(+id, updateAudioDto);
-  }
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateAudioDto: UpdateAudioDto) {
+  //   return this.audioService.update(+id, updateAudioDto);
+  // }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
@@ -35,5 +35,13 @@ export class AudioController {
   @Get('label')
   async getLabelFromAudio() {
     return this.audioService.getLabelFromAudio();
+  }
+
+  @Post('update-audio-url/:trackId')
+  async updateAudioUrlByTrackId(
+    @Body() body: UpdateAudioUrlDto,
+    @Param('trackId') trackId: string
+  ) {
+    return this.audioService.updateAudioUrlByTrackId(+trackId, body);
   }
 }

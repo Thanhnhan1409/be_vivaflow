@@ -127,6 +127,11 @@ export class ArtistService {
                 coverImageUrl: true,
               },
             },
+            audio: {
+              select: {
+                fullUrl: true,
+              }
+            }
           },
         } 
       },
@@ -136,6 +141,7 @@ export class ArtistService {
       tracks: artist.tracks.map((track) => ({
         ...track,
         coverImageUrl: track.album?.coverImageUrl || null,
+        fullUrl: track.audio?.fullUrl || null,
       }))
     });
   }

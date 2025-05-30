@@ -170,6 +170,7 @@ export class AuthService {
         id: true,
         email: true,
         username: true,
+        fullname: true,
         avatarImageUrl: true,
         pwdHash: false,
       },
