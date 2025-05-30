@@ -35,6 +35,11 @@ export class UserService {
                 coverImageUrl: true,
               },
             },
+            audio: {
+              select: {
+                fullUrl: true,
+              },
+            },
           },
         }
       },
@@ -46,6 +51,7 @@ export class UserService {
         track: {
           ...item.track,
           coverImageUrl: item.track.album?.coverImageUrl || null,
+          fullUrl: item.track.audio?.fullUrl || null,
         },
       }))
     );

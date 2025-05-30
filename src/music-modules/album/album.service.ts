@@ -55,6 +55,11 @@ export class AlbumService {
                 coverImageUrl: true,
               },
             },
+            audio: {
+              select: {
+                fullUrl: true,
+              },
+            },
           },
         },
       },
@@ -65,6 +70,7 @@ export class AlbumService {
       tracks: album.tracks.map((track) => ({
         ...track,
         coverImageUrl: track.album?.coverImageUrl || null,
+        fullUrl: track.audio?.fullUrl || null,
       })),
     });
   }

@@ -35,11 +35,11 @@ export class TrackController {
   @Get()
   async findAll(
     @Query('pageNumber') page = '1',
-    @Query('pageSize') limit = '10',
+    @Query('pageSize') limit = '20',
     @Query('searchText') searchText = ''
   ) {
     const pageNumber = parseInt(page, 10) || 1;
-    const limitNumber = parseInt(limit, 10) || 10;
+    const limitNumber = parseInt(limit, 10) || 20;
 
     return await this.trackService.findAll(searchText, pageNumber, limitNumber);
   }
