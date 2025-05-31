@@ -1,4 +1,4 @@
-name: Deploy Microservices to Azure Container Apps
+name: Deploy
 
 on:
   push:
@@ -8,7 +8,6 @@ on:
 
 jobs:
   deploy:
-    needs: build
     runs-on: ubuntu-latest
 
     steps:
