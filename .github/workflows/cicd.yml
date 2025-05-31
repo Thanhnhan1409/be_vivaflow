@@ -21,7 +21,7 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
           script: |
-            cd /be_vivaflow
+            cd be_vivaflow/
             git pull origin main
             docker-compose build
             docker-compose up -d --remove-orphans
