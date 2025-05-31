@@ -4,6 +4,7 @@ import { Artist } from 'src/artist/entities/artist.entity';
 import {
   ApiPropEnumOptional,
   ApiPropNumber,
+  ApiPropString,
   ApiPropStringOptional,
   ApiPropTypeOptional,
 } from 'src/decorator/entity.decorator';

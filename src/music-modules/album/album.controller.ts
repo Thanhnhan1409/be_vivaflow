@@ -39,4 +39,9 @@ export class AlbumController {
   async getAlbumWithTracks(@Param('id') id: number) {
     return this.albumService.findOneWithTrack(+id);
   }
+
+  @Get('with-artist/:id')
+  async getAlbumWithArtist(@Param('id') id: number) {
+    return this.albumService.findManyWithArtist(+id);
+  }
 }
