@@ -151,8 +151,19 @@ export class PlaylistService {
   // update(id: number, updatePlaylistDto: UpdatePlaylistDto) {
   //   return `This action updates a #${id} playlist`;
   // }
-  remove(id: number) {
-    return `This action removes a #${id} playlist`;
+  async remove(id: number) {
+    const playlist = await this.prisma.playlist.findFirstOrThrow({
+      where: { id: Number(id) },
+    });
+    
+    await this.prisma.playlist_track_link.deleteMany({
+      where: { playlistId: Number(id) },
+    });
+
+    await this.prisma.playlist.delete({
+      where: { id: Number(id) },
+    });
+    return PlainToInstance(Playlist, playlist);
   }
 
   // Return a list of recommendation track ids

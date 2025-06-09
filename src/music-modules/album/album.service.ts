@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PlainToInstance } from 'src/helpers';
+import { PlainToInstance, PlainToInstanceList } from 'src/helpers';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Album, AlbumWithForeign, AlbumWithTrack } from './entities/album.entity';
 // import { CreateAlbumDto } from './dto/create-album.dto';
@@ -87,6 +87,14 @@ export class AlbumService {
   // update(id: number, updateAlbumDto: UpdateAlbumDto) {
   //   return `This action updates a #${id} album`;
   // }
+
+  async findOneWithArtist(id: number) {
+    const album = await this.prisma.album.findMany({
+      where: { artistId: Number(id) }
+    });
+
+    return PlainToInstanceList(AlbumWithTrack, album);
+  }
 
   remove(id: number) {
     return `This action removes a #${id} album`;
