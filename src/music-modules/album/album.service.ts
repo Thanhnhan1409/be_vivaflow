@@ -62,6 +62,7 @@ export class AlbumService {
             },
           },
         },
+        artist: true
       },
     });
 
@@ -71,7 +72,7 @@ export class AlbumService {
         ...track,
         coverImageUrl: track.album?.coverImageUrl || null,
         fullUrl: track.audio?.fullUrl || null,
-      })),
+      }))
     });
   }
 
@@ -88,12 +89,13 @@ export class AlbumService {
   //   return `This action updates a #${id} album`;
   // }
 
-  async findOneWithArtist(id: number) {
-    const album = await this.prisma.album.findMany({
-      where: { artistId: Number(id) }
-    });
-
-    return PlainToInstanceList(AlbumWithTrack, album);
+  async findManyWithArtist(id: number) {
+    const albums = await this.prisma.album.findMany({
+      where: { artistId: Number(id) },
+      include: { artist: true },
+      orderBy: { temp_popularity: 'desc' },
+    })
+    return PlainToInstanceList(Album, albums);
   }
 
   remove(id: number) {
