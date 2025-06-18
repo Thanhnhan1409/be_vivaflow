@@ -40,10 +40,10 @@ export class AuthService {
 
       return this.signToken(user);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-          throw new ForbiddenException('Credentials taken');
-        }
+      if (error.code === 'P2002') {
+        const target = (error.meta?.target as string[]) || [];
+        const field = target.join(', ');
+        throw new ForbiddenException(`The field '${field}' is already in use.`);
       }
       throw error;
     }
