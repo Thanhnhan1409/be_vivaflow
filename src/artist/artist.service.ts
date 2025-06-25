@@ -17,19 +17,19 @@ export class ArtistService {
   // return 'This action adds a new artist';
   // }
 
-  async findAll(page = 1, pageSize = 10) {
+  async findAll(page = 1, pageSize = 20) {
     const skip = (page - 1) * pageSize;
     const take = pageSize;
-  
+
     const [artists, total] = await this.prisma.$transaction([
       this.prisma.artist.findMany({
         skip,
         take,
-        orderBy: { temp_popularity : 'desc' },
+        orderBy: { temp_popularity: 'desc' },
       }),
       this.prisma.artist.count(),
     ]);
-  
+
     return {
       data: PlainToInstanceList(Artist, artists),
       meta: {
@@ -40,18 +40,19 @@ export class ArtistService {
       },
     };
   }
-  
 
   async findMany(filter: FindManyArtistQueryDto) {
     const page = Number(filter.page) || 1;
     const limit = Number(filter.pageSize) || 10;
     const skip = (page - 1) * limit;
-    const [artists, total] =  await this.prisma.$transaction([
+    const [artists, total] = await this.prisma.$transaction([
       this.prisma.artist.findMany({
         skip,
         take: limit,
         where: {
-          id: filter.ids ? { in: filter.ids.map(id => Number(id)) } : undefined,
+          id: filter.ids
+            ? { in: filter.ids.map((id) => Number(id)) }
+            : undefined,
           spotifyArtistId: filter.spotifyIds
             ? { in: filter.spotifyIds }
             : undefined,
@@ -68,7 +69,7 @@ export class ArtistService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    }
+    };
   }
 
   async searchArtistName(filter: SearchArtistNameQueryDto) {
@@ -94,7 +95,7 @@ export class ArtistService {
         limit,
         totalPages: Math.ceil(total / limit),
       },
-    }
+    };
   }
 
   async findOne(id: number) {
@@ -130,10 +131,10 @@ export class ArtistService {
             audio: {
               select: {
                 fullUrl: true,
-              }
-            }
+              },
+            },
           },
-        } 
+        },
       },
     });
     return PlainToInstance(ArtistWithForeign, {
@@ -142,7 +143,7 @@ export class ArtistService {
         ...track,
         coverImageUrl: track.album?.coverImageUrl || null,
         fullUrl: track.audio?.fullUrl || null,
-      }))
+      })),
     });
   }
 
@@ -184,11 +185,11 @@ export class ArtistService {
       recentArtists.map((i) => i.artist),
     );
   }
-  
+
   async toggleFollowArtist(authData: AuthData, artistIds: number[]) {
     const userId = Number(authData.id);
     const now = Math.floor(Date.now() / 1000);
-    
+
     await Promise.all(
       artistIds.map(async (artistId) => {
         const record = await this.prisma.user_listen_artist.findUnique({
@@ -224,12 +225,11 @@ export class ArtistService {
             },
           });
         }
-      })
+      }),
     );
 
     return true;
-  } 
-
+  }
 
   // TODO
   // update(id: number, updateArtistDto: UpdateArtistDto) {

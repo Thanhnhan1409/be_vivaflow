@@ -26,7 +26,15 @@ export class TrackService {
       this.prisma.track.findMany({
         skip,
         take: Number(limit),
-        where: { title: { contains: searchText.trim() }, },
+        where: {
+          title: { contains: searchText.trim() },
+          previewAudioUrl: { not: null },
+          audio: {
+            is: {
+              OR: [{ fullUrl: { not: null } }],
+            },
+          },
+        },
         orderBy: { temp_popularity : 'desc' },
         include: {
           album: {
